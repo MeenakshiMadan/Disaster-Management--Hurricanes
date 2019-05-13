@@ -1,2 +1,25 @@
 from textblob import TextBlob
 trail4[['polarity', 'subjectivity']] = trail4['Tweet'].apply(lambda Text: pd.Series(TextBlob(Text).sentiment))
+
+def sentiment_calc(text):
+    try:
+        return TextBlob(text).sentiment
+    except:
+        return None
+
+trail6 = trail4[trail4.polarity != 0]
+trail5 = pd.DataFrame(columns = ['sentiment', 'time'])
+trail5[['sentiment', 'time', 'retweets']] = trail6[['polarity', 'Time', 'Retweets']]
+trail7 = (trail5.groupby(['time'], as_index=False).mean()
+            .groupby('time')['sentiment'].mean())
+trail7.to_csv('senti1.csv')
+
+trail8 = pd.DataFrame(columns = ['time', 'sentiment', 'retweets'])
+trail8['time'] = trail4['Time']
+trail8['sentiment'] = trail4['subjectivity']
+trail8['retweets'] = trail4['Retweets']
+# Get names of indexes for which column Age has value 30
+indexNames = trail8[ trail8['sentiment'] == 0 ].index
+# Delete these row indexes from dataFrame
+trail8.drop(indexNames , inplace=True)
+trail8.to_csv('senti2.csv')

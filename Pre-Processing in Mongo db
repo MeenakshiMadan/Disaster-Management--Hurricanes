@@ -1,0 +1,252 @@
+STEPS for 1st dataset
+after importing using mongoimport
+1. obatin all description and location for geo_enabled: true
+	db.tweets.find({"geo_enabled": true}, {"user.description": 1, "user.location": 1, "_id": 0})
+2. remove documents whose geo_enabled: false
+	db.tweets.remove({"user.geo_enabled": false});
+3. create seperate collection fo only location(describe 4)
+	db.tweets.aggregate([{$group : {_id: "$_id", tweets: { $push: "$user.location"}}}, {$out: "describe4"}], {allowDiskUse: true});
+4. create separate collection for only description (describe 5)
+	db.tweets.aggregate([{$group : {_id: "$_id", tweets: { $push: "$user.description"}}}, {$out: "describe5"}], {allowDiskUse: true});
+5. change field name in describe4 from tweets to location using $rename
+	db.describe4.updateMany({$rename: {"tweets": "location"}});
+6. Exporting to csv
+	mongoexport --db hurricane2 --collection describe6 --fields "tweets", "userinfo.tweets" --out "C:\Users\lsahi\Documents\time.csv"
+
+db.tweets.aggregate([{$group : {_id: "$_id", tweets: { $push: "$created_at"}}}, {$out: "describe7"}], {allowDiskUse: true});
+
+
+Steps for 2nd dataset
+
+1.  db.tweets.find({"user.geo_enabled": true}, {"full_text": 1, "user.location": 1, "user.description": 1, "_id": 0})
+2.db.tweets.aggregate([{$group : {_id: "$_id", tweets: { $push: "$user.location"}}}, {$out: "describe4"}], {allowDiskUse: true});
+3. db.tweets.aggregate([{$group : {_id: "$_id", tweets: { $push: "full_text"}}}, {$out: "describe5"}], {allowDiskUse: true});
+4. db.describe4.aggregate([{ "$lookup": {
+  "localField": "_id",
+  "from": "describe5",
+  "foreignField": "_id",
+  "as": "userinfo"
+} }, 
+  {$out: "describe6"}])
+5. Exporting 
+mongoexport --db hurricane2 --collection describe6 --out "time.csv"
+
+
+#######SAMPLE DATA 
+        "_id" : ObjectId("5ca3e5113b561a4805dfb42f"),
+        "contributors" : null,
+        "truncated" : false,
+        "text" : "RT @RedTRaccoon: Please RETWEET\n\nhttps://t.co/5iWl92XAXx\nhttps://t.co/3p4vPbtJSF\nhttps://t.co/HEwEooYtin\n\n#Houston #houstonflood #Harvey #h…",
+        "is_quote_status" : false,
+        "in_reply_to_status_id" : null,
+        "id" : NumberLong("901774878990245888"),
+        "favorite_count" : 0,
+        "source" : "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+        "retweeted" : false,
+        "coordinates" : null,
+        "entities" : {
+                "symbols" : [ ],
+                "user_mentions" : [
+                        {
+                                "indices" : [
+                                        3,
+                                        15
+                                ],
+                                "screen_name" : "RedTRaccoon",
+                                "id" : NumberLong("825518870421180416"),
+                                "name" : "Red T Raccoon",
+                                "id_str" : "825518870421180416"
+                        }
+                ],
+                "hashtags" : [
+                        {
+                                "indices" : [
+                                        106,
+                                        114
+                                ],
+                                "text" : "Houston"
+                        },
+                        {
+                                "indices" : [
+                                        115,
+                                        128
+                                ],
+                                "text" : "houstonflood"
+                        },
+                        {
+                                "indices" : [
+                                        129,
+                                        136
+                                ],
+                                "text" : "Harvey"
+                        }
+                ],
+                "urls" : [
+                        {
+                                "url" : "https://t.co/5iWl92XAXx",
+                                "indices" : [
+                                        33,
+                                        56
+                                ],
+                                "expanded_url" : "http://Fema.gov",
+                                "display_url" : "Fema.gov"
+                        },
+                        {
+                                "url" : "https://t.co/3p4vPbtJSF",
+                                "indices" : [
+                                        57,
+                                        80
+                                ],
+                                "expanded_url" : "http://houstonemergency.org",
+                                "display_url" : "houstonemergency.org"
+                        },
+                        {
+                                "url" : "https://t.co/HEwEooYtin",
+                                "indices" : [
+                                        81,
+                                        104
+                                ],
+                                "expanded_url" : "http://Redcross.org",
+                                "display_url" : "Redcross.org"
+                        }
+                ]
+        },
+        "in_reply_to_screen_name" : null,
+        "id_str" : "901774878990245888",
+        "retweet_count" : 548,
+        "in_reply_to_user_id" : null,
+        "favorited" : false,
+        "retweeted_status" : {
+                "contributors" : null,
+                "truncated" : true,
+                "text" : "Please RETWEET\n\nhttps://t.co/5iWl92XAXx\nhttps://t.co/3p4vPbtJSF\nhttps://t.co/HEwEooYtin\n\n#Houston #houstonflood… https://t.co/uG6VQ9GDmx",
+                "is_quote_status" : false,
+                "in_reply_to_status_id" : null,
+                "id" : NumberLong("901703797562626048"),
+                "favorite_count" : 241,
+                "source" : "<a href=\"http://twitter.com/download/android\" rel=\"nofollow\">Twitter for Android</a>",
+                "retweeted" : false,
+                "coordinates" : null,
+                "entities" : {
+                        "symbols" : [ ],
+                        "user_mentions" : [ ],
+                        "hashtags" : [
+                                {
+                                        "indices" : [
+                                                89,
+                                                97
+                                        ],
+                                        "text" : "Houston"
+                                },
+                                {
+                                        "indices" : [
+                                                98,
+                                                111
+                                        ],
+                                        "text" : "houstonflood"
+                                }
+                        ],
+                        "urls" : [
+                                {
+                                        "url" : "https://t.co/5iWl92XAXx",
+                                        "indices" : [
+                                                16,
+                                                39
+                                        ],
+                                        "expanded_url" : "http://Fema.gov",
+                                        "display_url" : "Fema.gov"
+                                },
+                                {
+                                        "url" : "https://t.co/3p4vPbtJSF",
+                                        "indices" : [
+                                                40,
+                                                63
+                                        ],
+                                        "expanded_url" : "http://houstonemergency.org",
+                                        "display_url" : "houstonemergency.org"
+                                },
+                                {
+                                        "url" : "https://t.co/HEwEooYtin",
+                                        "indices" : [
+                                                64,
+                                                87
+                                        ],
+                                        "expanded_url" : "http://Redcross.org",
+                                        "display_url" : "Redcross.org"
+                                },
+                                {
+                                        "url" : "https://t.co/uG6VQ9GDmx",
+                                        "indices" : [
+                                                113,
+                                                136
+                                        ],
+                                        "expanded_url" : "https://twitter.com/i/web/status/901703797562626048",
+                                        "display_url" : "twitter.com/i/web/status/9…"
+                                }
+                        ]
+                },
+                "in_reply_to_screen_name" : null,
+                "id_str" : "901703797562626048",
+                "retweet_count" : 548,
+                "in_reply_to_user_id" : null,
+                "favorited" : false,
+                "user" : {
+                        "follow_request_sent" : false,
+                        "has_extended_profile" : true,
+                        "profile_use_background_image" : true,
+                        "time_zone" : null,
+                        "id" : NumberLong("825518870421180416"),
+                        "default_profile" : true,
+                        "verified" : false,
+                        "profile_text_color" : "333333",
+                        "profile_image_url_https" : "https://pbs.twimg.com/profile_images/880234779995762688/gtbpXhJ0_normal.jpg",
+                        "profile_sidebar_fill_color" : "DDEEF6",
+                        "is_translator" : false,
+                        "geo_enabled" : false,
+                        "entities" : {
+                                "description" : {
+                                        "urls" : [ ]
+                                }
+                        },
+                        "followers_count" : 43206,
+                        "protected" : false,
+                        "id_str" : "825518870421180416",
+                        "default_profile_image" : false,
+                        "listed_count" : 208,
+                        "lang" : "en",
+                        "utc_offset" : null,
+                        "statuses_count" : 22971,
+                        "description" : "#resist #theresistance #resistance #unite #UniteBlue #Indivisible #followbackresistance #FBR #geeksresist #vetsresist #veteransresist",
+                        "friends_count" : 34145,
+                        "profile_link_color" : "1DA1F2",
+                        "profile_image_url" : "http://pbs.twimg.com/profile_images/880234779995762688/gtbpXhJ0_normal.jpg",
+                        "notifications" : false,
+                        "profile_background_image_url_https" : null,
+                        "profile_background_color" : "F5F8FA",
+                        "profile_banner_url" : "https://pbs.twimg.com/profile_banners/825518870421180416/1489892882",
+                        "profile_background_image_url" : null,
+                        "name" : "Red T Raccoon",
+                        "is_translation_enabled" : false,
+                        "profile_background_tile" : false,
+                        "favourites_count" : 22420,
+                        "screen_name" : "RedTRaccoon",
+                        "url" : null,
+                        "created_at" : "Sun Jan 29 01:40:11 +0000 2017",
+                        "contributors_enabled" : false,
+                        "location" : "United States",
+                        "profile_sidebar_border_color" : "C0DEED",
+                        "translator_type" : "none",
+                        "following" : false
+                },
+                "geo" : null,
+                "in_reply_to_user_id_str" : null,
+                "possibly_sensitive" : false,
+                "lang" : "en",
+                "created_at" : "Sun Aug 27 07:11:52 +0000 2017",
+                "in_reply_to_status_id_str" : null,
+                "place" : null,
+                "metadata" : {
+                        "iso_language_code" : "en",
+                        "result_type" : "recent"
+                }
+        },
